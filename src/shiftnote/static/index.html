@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shiftnote</title>
+<meta name="description" content="Dictate or paste a shift handover note and get structured, checked care documentation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  /* Atkinson Hyperlegible: designed for low-vision legibility, which suits a ward at 3 a.m.
+     The one loud element is the highlighter: every structured item is tied back to the
+     words in the note it came from. */
+  :root {
+    --page: #f3f5f4;
+    --sheet: #ffffff;
+    --ink: #14231f;
+    --muted: #5d6b67;
+    --line: #d8dfdc;
+    --green: #0f7b6c;
+    --green-soft: #e3f2ef;
+    --amber: #a1610a;
+    --amber-soft: #fcf1df;
+    --red: #b42318;
+    --red-soft: #fdecea;
+    --marker: #fff09a;
+    --marker-strong: #ffd84d;
+    --font: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.5 var(--font); }
+  :focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  h1, h2, h3 { margin: 0; line-height: 1.2; }
+  p { margin: 0; }
+
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; padding: 1.25rem clamp(1rem, 3vw, 2rem); border-bottom: 1px solid var(--line); background: var(--sheet); }
+  header h1 { font-size: 1.5rem; }
+  header p { color: var(--muted); }
+  header .engine { margin-left: auto; color: var(--muted); font-size: .875rem; }
+
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 1.5rem; padding: 1.5rem clamp(1rem, 3vw, 2rem) 3rem; max-width: 1400px; margin: 0 auto; }
+  section.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; min-width: 0; }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1rem; }
+  .panel-head h2 { font-size: 1.125rem; }
+
+  textarea { width: 100%; min-height: 15rem; padding: .875rem 1rem; border: 1px solid var(--line); border-radius: 8px; font: 1rem/1.6 var(--font); color: var(--ink); resize: vertical; }
+  textarea:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px var(--green-soft); }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .75rem; }
+  button, select { font: 600 .9375rem var(--font); min-height: 2.5rem; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--ink); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .primary:hover:not(:disabled) { background: #0c6458; border-color: #0c6458; }
+  .mic[aria-pressed="true"] { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+  .samples { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-top: 1rem; font-size: .875rem; color: var(--muted); }
+  .samples button { min-height: 2rem; padding: 0 .625rem; font-size: .875rem; font-weight: 400; }
+  .hint { margin-top: .75rem; color: var(--muted); font-size: .875rem; }
+
+  /* The note as written, with each evidence span highlighted */
+  .source { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
+  .source h3 { font-size: .9375rem; margin-bottom: .5rem; }
+  .source-text { white-space: pre-wrap; line-height: 1.75; }
+  mark { background: var(--marker); color: inherit; border-radius: 2px; padding: 0 1px; transition: background-color 120ms; }
+  mark.active { background: var(--marker-strong); box-shadow: 0 0 0 2px var(--marker-strong); }
+
+  /* Result */
+  .empty { color: var(--muted); padding: 2rem 0; max-width: 46ch; }
+  .status { display: flex; gap: .75rem; align-items: flex-start; padding: .875rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; }
+  .status strong { display: block; }
+  .status.complete { background: var(--green-soft); color: #0b5a4f; }
+  .status.needs_review { background: var(--amber-soft); color: #7a4a08; }
+  .status.partial { background: var(--red-soft); color: var(--red); }
+  .meta { font-size: .8125rem; color: var(--muted); margin-top: .125rem; }
+
+  .block { margin-bottom: 1.25rem; }
+  .block > h3 { font-size: .9375rem; margin-bottom: .5rem; color: var(--muted); font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+  td, th { padding: .5rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 400; font-size: .8125rem; }
+  td.value { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  ul.items li { display: flex; gap: .75rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+  .tag { flex: none; align-self: flex-start; font-size: .75rem; font-weight: 700; padding: .125rem .5rem; border-radius: 999px; background: var(--page); color: var(--muted); }
+  .tag.urgent { background: var(--red-soft); color: var(--red); }
+  .tag.soon { background: var(--amber-soft); color: var(--amber); }
+  .tag.given { background: var(--green-soft); color: #0b5a4f; }
+  .tag.refused, .tag.held { background: var(--amber-soft); color: var(--amber); }
+  [data-evidence] { cursor: default; }
+  [data-evidence]:hover, [data-evidence]:focus-within { background: #fffbe0; }
+  .flag { color: var(--amber); font-size: .8125rem; display: block; }
+  .issues li { font-size: .875rem; }
+  details { margin-top: 1rem; font-size: .875rem; }
+  pre { overflow: auto; max-height: 24rem; background: var(--page); padding: .75rem; border-radius: 8px; font-size: .8125rem; }
+  .err { color: var(--red); margin-top: .75rem; }
+
+  @media (max-width: 920px) { main { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shiftnote</h1>
+  <p>Say or paste the handover. Get it back as structured, checked documentation.</p>
+  <span class="engine" id="engine"></span>
+</header>
+
+<main>
+  <section class="panel" aria-labelledby="in-title">
+    <div class="panel-head">
+      <h2 id="in-title">Handover note</h2>
+      <label class="visually-hidden" for="lang">Dictation language</label>
+      <select id="lang" aria-label="Dictation language">
+        <option value="en-US">English</option>
+        <option value="de-DE">Deutsch</option>
+        <option value="id-ID">Bahasa Indonesia</option>
+      </select>
+    </div>
+    <textarea id="note" placeholder="e.g. Room 12 bed B, BP 145/85, HR 92, temp 38.2. Paracetamol 1 g given 05:30. Please recheck temp at 10:00…"></textarea>
+    <div class="controls">
+      <button class="primary" id="go" type="button">Structure note</button>
+      <button class="mic" id="mic" type="button" aria-pressed="false">Dictate</button>
+      <span class="hint" id="mic-hint" hidden>Dictation needs Chrome or Edge.</span>
+    </div>
+    <div class="samples">
+      <span>Try an example:</span>
+      <button type="button" data-sample="en">Post-op, English</button>
+      <button type="button" data-sample="de">Pflegeheim, Deutsch</button>
+      <button type="button" data-sample="id">Bangsal, Indonesia</button>
+    </div>
+    <p class="hint">Use made-up notes only. Nothing is stored, but don't paste real patient data into a demo.</p>
+
+    <div class="source" id="source" hidden>
+      <h3>Where each item came from</h3>
+      <p class="source-text" id="source-text"></p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="out-title" aria-live="polite">
+    <div class="panel-head"><h2 id="out-title">Structured documentation</h2></div>
+    <div id="out"><p class="empty">The structured note appears here: vitals, medications, tasks for the next shift and risks. Hover any item to see the words it was taken from.</p></div>
+  </section>
+</main>
+
+<script>
+const SAMPLES = {
+  en: `Room 12 bed B, Mrs. Weber, 82, hip fracture post-op day 2. BP 145/85, HR 92, temp 38.2 C at 06:00, SpO2 94% on 2L O2. Pain 6/10 when moving.
+Paracetamol 1 g oral given 05:30. Refused breakfast, only a few spoons of yogurt.
+Sacrum slightly red, repositioned every 2h. Confused overnight, tried to get out of bed twice, bed alarm on.
+Please recheck temp at 10:00 and call the doctor if above 38.5. Wound dressing change due today.`,
+  de: `Zimmer 4, Herr K., 79. RR 160/95, Puls 88, Temp 37,4. BZ 11,2 mmol/l vor dem Frühstück.
+Insulin 8 IE s.c. um 07:30 gegeben. Hat gut gegessen. Mobilisation mit Rollator, unsicher beim Aufstehen.
+Allergie gegen Penicillin. Bitte Blutzucker um 11:30 kontrollieren.`,
+  id: `Kamar 7, Tn. A, 65 th. Tensi 90/60, nadi 112, suhu 36,8, saturasi 91%. Pasien tampak lemas dan pucat.
+Ceftriaxone 1 g IV jam 08:00 sudah diberikan. Makan hanya 1/4 porsi.
+Tolong cek tensi ulang jam 10:00 segera, lapor dokter jaga kalau tetap rendah.`,
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const VITAL_LABEL = { blood_pressure: 'Blood pressure', heart_rate: 'Heart rate', temperature: 'Temperature', spo2: 'SpO₂', respiratory_rate: 'Resp. rate', blood_glucose: 'Glucose', pain_score: 'Pain' };
+const STATUS = {
+  complete: ['Ready to file', 'Every item was found in the note and passed the checks.'],
+  needs_review: ['Check before filing', 'Usable, but some values are unusual, unclear or were removed. See the notes below.'],
+  partial: ['Only partly structured', 'The AI was unavailable, so only vital signs were picked out by rules. Read the full note.'],
+};
+
+fetch('health').then((r) => r.json()).then((h) => { $('engine').textContent = `Running on ${h.provider} (${h.model})`; }).catch(() => {});
+
+document.querySelectorAll('[data-sample]').forEach((b) => b.addEventListener('click', () => { $('note').value = SAMPLES[b.dataset.sample]; $('lang').value = { en: 'en-US', de: 'de-DE', id: 'id-ID' }[b.dataset.sample]; $('note').focus(); }));
+
+// ---- Dictation (Web Speech API, in the browser; the server only ever sees text) ----
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognizer = null;
+$('mic').addEventListener('click', () => {
+  if (!Recognition) { $('mic-hint').hidden = false; return; }
+  if (recognizer) { recognizer.stop(); return; }
+  recognizer = new Recognition();
+  recognizer.lang = $('lang').value;
+  recognizer.continuous = true;
+  recognizer.interimResults = false;
+  const before = $('note').value.trim();
+  let spoken = '';
+  recognizer.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) spoken += e.results[i][0].transcript.trim() + '. ';
+    $('note').value = (before ? before + '\n' : '') + spoken.trim();
+  };
+  recognizer.onend = () => { recognizer = null; $('mic').setAttribute('aria-pressed', 'false'); $('mic').textContent = 'Dictate'; };
+  recognizer.start();
+  $('mic').setAttribute('aria-pressed', 'true');
+  $('mic').textContent = 'Stop dictating';
+});
+
+// ---- Structure ----
+$('go').addEventListener('click', run);
+$('note').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run(); });
+
+async function run() {
+  const text = $('note').value.trim();
+  if (text.length < 10) { $('out').innerHTML = '<p class="err">Write or dictate a note of at least a sentence first.</p>'; return; }
+  $('go').disabled = true; $('go').textContent = 'Structuring…';
+  try {
+    const res = await fetch('v1/notes/structure', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }) });
+    if (!res.ok) throw new Error(`The server answered ${res.status}. Try a shorter note.`);
+    render(await res.json(), text);
+  } catch (err) {
+    $('out').innerHTML = `<p class="err">${esc(err.message || 'Could not reach the server.')}</p>`;
+  } finally {
+    $('go').disabled = false; $('go').textContent = 'Structure note';
+  }
+}
+
+function render(r, text) {
+  const n = r.note;
+  const evidences = [];
+  const ev = (e) => { if (!e) return ''; evidences.push(e); return ` data-evidence="${evidences.length - 1}" tabindex="0"`; };
+  const flagFor = (path) => r.issues.filter((i) => i.path === path).map((i) => `<span class="flag">${esc(i.message)}</span>`).join('');
+  const [title, desc] = STATUS[r.status];
+  let html = `<div class="status ${r.status}"><div><strong>${title}</strong>${desc}<p class="meta">${r.source === 'fallback' ? 'Rule-based fallback' : `${esc(r.provider)} ${esc(r.model)}`}, ${r.attempts} ${r.attempts === 1 ? 'attempt' : 'attempts'}, ${r.latency_ms} ms</p></div></div>`;
+
+  if (n.patient.reference) html += `<div class="block"><h3>Patient</h3><p${ev(n.patient.evidence)}>${esc(n.patient.reference)}</p></div>`;
+
+  if (n.vitals.length) {
+    html += `<div class="block"><h3>Vital signs</h3><table><thead><tr><th>Measure</th><th>Value</th><th>Time</th></tr></thead><tbody>`;
+    n.vitals.forEach((v, i) => {
+      const value = v.type === 'blood_pressure' ? `${v.value}/${v.value2}` : v.value;
+      html += `<tr${ev(v.evidence)}><td>${VITAL_LABEL[v.type] || v.type}${flagFor(`vitals[${i}]`)}</td><td class="value">${value}${/^[%/]/.test(v.unit) ? '' : ' '}${esc(v.unit)}</td><td>${esc(v.time || '')}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+  const list = (title, items, row) => items.length ? `<div class="block"><h3>${title}</h3><ul class="items">${items.map(row).join('')}</ul></div>` : '';
+  html += list('Medications', n.medications, (m) => `<li${ev(m.evidence)}><span class="tag ${m.status}">${m.status}</span><span><strong>${esc(m.name)}</strong> ${esc([m.dose, m.route].filter(Boolean).join(', '))}${m.time ? ` at ${esc(m.time)}` : ''}</span></li>`);
+  html += list('For the next shift', n.tasks, (t) => `<li${ev(t.evidence)}><span class="tag ${t.priority}">${t.priority}</span><span>${esc(t.description)}${t.due ? ` <strong>by ${esc(t.due)}</strong>` : ''}</span></li>`);
+  html += list('Risks', n.risk_flags, (f) => `<li${ev(f.evidence)}><span class="tag urgent">${esc(f.type.replace('_', ' '))}</span><span>${esc(f.detail)}</span></li>`);
+  html += list('Observations', n.observations, (o) => `<li${ev(o.evidence)}><span class="tag">${esc(o.category.replace('_', ' '))}</span><span>${esc(o.summary)}</span></li>`);
+  html += list('Double-check', n.uncertainties, (u) => `<li><span>${esc(u)}</span></li>`);
+  const removed = r.issues.filter((i) => i.message.startsWith('Removed:'));
+  html += list('Removed by the checks', removed, (i) => `<li class="issues"><span>${esc(i.path)}: ${esc(i.message.replace('Removed: ', ''))}</span></li>`);
+  html += `<details><summary>Show JSON</summary><pre>${esc(JSON.stringify(r, null, 2))}</pre></details>`;
+  $('out').innerHTML = html;
+  highlight(text, evidences);
+}
+
+// Mark every evidence span in the original note; hovering an item lights up its words.
+function highlight(text, evidences) {
+  const lower = text.toLowerCase();
+  const spans = [];
+  evidences.forEach((e, idx) => {
+    const at = lower.indexOf(e.toLowerCase());
+    if (at >= 0 && !spans.some((s) => at < s.end && s.start < at + e.length)) spans.push({ start: at, end: at + e.length, idx });
+  });
+  spans.sort((a, b) => a.start - b.start);
+  let html = '', pos = 0;
+  for (const s of spans) { html += esc(text.slice(pos, s.start)) + `<mark data-mark="${s.idx}">${esc(text.slice(s.start, s.end))}</mark>`; pos = s.end; }
+  $('source-text').innerHTML = html + esc(text.slice(pos));
+  $('source').hidden = false;
+  document.querySelectorAll('[data-evidence]').forEach((el) => {
+    const on = () => document.querySelector(`[data-mark="${el.dataset.evidence}"]`)?.classList.add('active');
+    const off = () => document.querySelectorAll('mark.active').forEach((m) => m.classList.remove('active'));
+    el.addEventListener('mouseenter', on); el.addEventListener('focus', on);
+    el.addEventListener('mouseleave', off); el.addEventListener('blur', off);
+  });
+}
+</script>
+<style>.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }</style>
+</body>
+</html>

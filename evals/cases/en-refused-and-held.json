@@ -1,0 +1,42 @@
+{
+  "id": "en-refused-and-held",
+  "language": "en",
+  "text": "Bed 3, Mr. Okafor. Refused his evening metoprolol, says it makes him dizzy. Morning insulin held because glucose 3.9 mmol/L at 07:00, gave juice, recheck was 6.1 at 07:30. HR 64, BP 118/72.\nPlease let the diabetes nurse know about the hypo.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "blood_glucose",
+        "value": 3.9
+      },
+      {
+        "type": "blood_glucose",
+        "value": 6.1
+      },
+      {
+        "type": "heart_rate",
+        "value": 64
+      },
+      {
+        "type": "blood_pressure",
+        "value": 118,
+        "value2": 72
+      }
+    ],
+    "medications": [
+      {
+        "name": "metoprolol",
+        "status": "refused"
+      },
+      {
+        "name": "insulin",
+        "status": "held"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "diabetes nurse"
+      }
+    ],
+    "risk_flags": []
+  }
+}

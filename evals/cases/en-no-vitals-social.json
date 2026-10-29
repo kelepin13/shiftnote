@@ -1,0 +1,16 @@
+{
+  "id": "en-no-vitals-social",
+  "language": "en",
+  "text": "Room 21. Quiet night, slept well from 23:00. Daughter will visit at 14:00 and wants to speak to the doctor about discharge. Eating and drinking normally, walking independently to the bathroom.",
+  "expected": {
+    "vitals": [],
+    "medications": [],
+    "tasks": [
+      {
+        "keyword": "doctor",
+        "due": "14:00"
+      }
+    ],
+    "risk_flags": []
+  }
+}

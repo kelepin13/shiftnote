@@ -1,0 +1,34 @@
+{
+  "id": "en-ambiguous-dose",
+  "language": "en",
+  "text": "Room 9 bed A. Morphine given for pain around 3am, dose not written on the chart, night nurse unsure if 2 or 5 mg. Pain now 3/10. RR 14, SpO2 97%.\nCheck the controlled drugs book this morning.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "pain_score",
+        "value": 3
+      },
+      {
+        "type": "respiratory_rate",
+        "value": 14
+      },
+      {
+        "type": "spo2",
+        "value": 97
+      }
+    ],
+    "medications": [
+      {
+        "name": "morphine",
+        "status": "given"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "controlled drugs"
+      }
+    ],
+    "risk_flags": [],
+    "must_flag_uncertain": true
+  }
+}

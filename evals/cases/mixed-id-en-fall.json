@@ -1,0 +1,34 @@
+{
+  "id": "mixed-id-en-fall",
+  "language": "mixed",
+  "text": "Kamar 3 bed 1, Ny. L, 88. Jatuh di kamar mandi jam 02:15, no head injury, ada memar di lengan kiri. Vital signs after fall: BP 130/80, nadi 76, SpO2 96%. Dokter jaga sudah lihat.\nTolong observasi neuro tiap 4 jam dan pasang bel dekat tempat tidur.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "blood_pressure",
+        "value": 130,
+        "value2": 80
+      },
+      {
+        "type": "heart_rate",
+        "value": 76
+      },
+      {
+        "type": "spo2",
+        "value": 96
+      }
+    ],
+    "medications": [],
+    "tasks": [
+      {
+        "keyword": "neuro"
+      },
+      {
+        "keyword": "bell"
+      }
+    ],
+    "risk_flags": [
+      "fall"
+    ]
+  }
+}

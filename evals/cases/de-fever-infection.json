@@ -1,0 +1,44 @@
+{
+  "id": "de-fever-infection",
+  "language": "de",
+  "text": "Zi. 15 Bett 2, Frau S. Temp 39,1 um 04:00, Schüttelfrost. Puls 118, RR 105/60, Atemfrequenz 24. Blutkulturen abgenommen, Arzt informiert. Paracetamol 1 g i.v. um 04:20 gegeben.\nBitte Temperatur stündlich kontrollieren und Urinausscheidung bilanzieren.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "temperature",
+        "value": 39.1
+      },
+      {
+        "type": "heart_rate",
+        "value": 118
+      },
+      {
+        "type": "blood_pressure",
+        "value": 105,
+        "value2": 60
+      },
+      {
+        "type": "respiratory_rate",
+        "value": 24
+      }
+    ],
+    "medications": [
+      {
+        "name": "paracetamol",
+        "status": "given"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "temperature"
+      },
+      {
+        "keyword": "urine"
+      }
+    ],
+    "risk_flags": [
+      "infection",
+      "deterioration"
+    ]
+  }
+}

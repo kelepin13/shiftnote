@@ -1,0 +1,41 @@
+{
+  "id": "id-ward-hypotension",
+  "language": "id",
+  "text": "Kamar 7, Tn. A, 65 th. Tensi 90/60, nadi 112, suhu 36,8, saturasi 91%. Pasien tampak lemas dan pucat.\nCeftriaxone 1 g IV jam 08:00 sudah diberikan. Makan hanya 1/4 porsi.\nTolong cek tensi ulang jam 10:00 segera, lapor dokter jaga kalau tetap rendah.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "blood_pressure",
+        "value": 90,
+        "value2": 60
+      },
+      {
+        "type": "heart_rate",
+        "value": 112
+      },
+      {
+        "type": "temperature",
+        "value": 36.8
+      },
+      {
+        "type": "spo2",
+        "value": 91
+      }
+    ],
+    "medications": [
+      {
+        "name": "ceftriaxone",
+        "status": "given"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "blood pressure",
+        "due": "10:00"
+      }
+    ],
+    "risk_flags": [
+      "deterioration"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "de-nursing-home-diabetes",
+  "language": "de",
+  "text": "Zimmer 4, Herr K., 79. RR 160/95, Puls 88, Temp 37,4. BZ 11,2 mmol/l vor dem Frühstück.\nInsulin 8 IE s.c. um 07:30 gegeben. Hat gut gegessen. Mobilisation mit Rollator, unsicher beim Aufstehen.\nAllergie gegen Penicillin. Bitte Blutzucker um 11:30 kontrollieren.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "blood_pressure",
+        "value": 160,
+        "value2": 95
+      },
+      {
+        "type": "heart_rate",
+        "value": 88
+      },
+      {
+        "type": "temperature",
+        "value": 37.4
+      },
+      {
+        "type": "blood_glucose",
+        "value": 11.2
+      }
+    ],
+    "medications": [
+      {
+        "name": "insulin",
+        "status": "given"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "glucose",
+        "due": "11:30"
+      }
+    ],
+    "risk_flags": [
+      "allergy",
+      "fall"
+    ]
+  }
+}

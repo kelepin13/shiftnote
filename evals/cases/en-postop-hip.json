@@ -1,0 +1,49 @@
+{
+  "id": "en-postop-hip",
+  "language": "en",
+  "text": "Room 12 bed B, Mrs. Weber, 82, hip fracture post-op day 2. BP 145/85, HR 92, temp 38.2 C at 06:00, SpO2 94% on 2L O2. Pain 6/10 when moving.\nParacetamol 1 g oral given 05:30. Refused breakfast, only a few spoons of yogurt.\nSacrum slightly red, repositioned every 2h. Confused overnight, tried to get out of bed twice, bed alarm on.\nPlease recheck temp at 10:00 and call the doctor if above 38.5. Wound dressing change due today.",
+  "expected": {
+    "vitals": [
+      {
+        "type": "blood_pressure",
+        "value": 145,
+        "value2": 85
+      },
+      {
+        "type": "heart_rate",
+        "value": 92
+      },
+      {
+        "type": "temperature",
+        "value": 38.2
+      },
+      {
+        "type": "spo2",
+        "value": 94
+      },
+      {
+        "type": "pain_score",
+        "value": 6
+      }
+    ],
+    "medications": [
+      {
+        "name": "paracetamol",
+        "status": "given"
+      }
+    ],
+    "tasks": [
+      {
+        "keyword": "temp",
+        "due": "10:00"
+      },
+      {
+        "keyword": "dressing"
+      }
+    ],
+    "risk_flags": [
+      "pressure_injury",
+      "fall"
+    ]
+  }
+}
